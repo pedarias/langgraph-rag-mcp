@@ -1,11 +1,10 @@
-#!/Users/rlm/Desktop/Code/vibe-code-benchmark/.venv/bin/python
-
+import os
 from mcp.server.fastmcp import FastMCP
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import SKLearnVectorStore
 
 # Define common path to the repo locally
-PATH = "/home/hub/Desktop/ccode/langraph-rag-mcp"
+PATH = os.path.dirname(os.path.abspath(__file__))
 
 # Create an MCP server
 mcp = FastMCP("LangGraph-Docs-MCP-Server")
@@ -24,7 +23,7 @@ def langgraph_query_tool(query: str):
     """
     retriever = SKLearnVectorStore(
         embedding=HuggingFaceEmbeddings(model_name="BAAI/bge-large-en-v1.5"), 
-        persist_path=PATH + "sklearn_vectorstore.parquet", 
+        persist_path=os.path.join(PATH, "sklearn_vectorstore.parquet"), 
         serializer="parquet").as_retriever(search_kwargs={"k": 3}
         )
 
@@ -48,7 +47,7 @@ def get_all_langgraph_docs() -> str:
     """
 
     # Local path to the LangGraph documentation
-    doc_path = PATH + "llms_full.txt"
+    doc_path = os.path.join(PATH, "llms_full.txt")
     try:
         with open(doc_path, 'r') as file:
             return file.read()
