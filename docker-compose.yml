@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  langgraph-mcp:
+    build: .
+    container_name: langgraph-mcp-container
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    volumes:
+      # Mount the vector store data to persist across container restarts
+      - ./sklearn_vectorstore.parquet:/app/sklearn_vectorstore.parquet:ro
+      - ./llms_full.txt:/app/llms_full.txt:ro
+    stdin_open: true
+    tty: true
+    # For MCP stdio communication, we need to keep the container running
+    # and handle I/O through docker exec
+    command: ["tail", "-f", "/dev/null"]
+    restart: unless-stopped

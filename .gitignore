@@ -1,3 +1,5 @@
+sklearn_vectorstore.parquet
+llms_full.txt
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
