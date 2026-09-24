@@ -8,6 +8,7 @@ from uuid import uuid4
 
 from filelock import FileLock
 from langchain_core.embeddings import Embeddings
+from pydantic import TypeAdapter
 
 from langgraph_rag_mcp.chunking import Tokenizer, load_tokenizer, split_pages
 from langgraph_rag_mcp.embeddings import CachedEmbeddings, load_embeddings
@@ -42,6 +43,28 @@ def load_manifest(settings: Settings) -> Manifest:
         ) from exc
 
 
+def _validate_snapshot(settings: Settings, manifest: Manifest) -> None:
+    path = snapshot_path(settings, manifest)
+    try:
+        serialized_pages = (path / "pages.json").read_text(encoding="utf-8")
+        pages = TypeAdapter(list[Page]).validate_json(serialized_pages)
+        if (
+            len(pages) != manifest.pages
+            or hashlib.sha256(serialized_pages.encode()).hexdigest() != manifest.pages_hash
+        ):
+            raise ValueError("Snapshot pages do not match the manifest")
+        documents, _ = VectorStore.read(path / "vectors.parquet")
+        sources = {page.source for page in pages}
+        if len(documents) != manifest.chunks or any(
+            document.metadata["source"] not in sources for document in documents
+        ):
+            raise ValueError("Snapshot vectors do not match the manifest or pages")
+    except (OSError, ValueError, TypeError) as exc:
+        raise IndexNotReadyError(
+            "Documentation snapshot is incomplete or invalid; restore the snapshot"
+        ) from exc
+
+
 def build_index(
     settings: Settings,
     *,
@@ -66,8 +89,7 @@ def build_index(
         if (settings.data_dir / "current.json").exists():
             previous = load_manifest(settings)
             if previous.config == config and previous.pages_hash == pages_hash:
-                if not (snapshot_path(settings, previous) / "vectors.parquet").is_file():
-                    raise IndexNotReadyError("Index vectors are missing; restore the snapshot")
+                _validate_snapshot(settings, previous)
                 return BuildResult(
                     generation=previous.generation,
                     pages=previous.pages,

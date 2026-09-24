@@ -11,18 +11,28 @@ from sklearn.neighbors import NearestNeighbors
 
 
 class VectorStore:
-    def __init__(self, documents: list[Document], vectors: list[list[float]], embeddings: Embeddings) -> None:
+    def __init__(
+        self,
+        documents: list[Document],
+        vectors: list[list[float]] | NDArray[np.float64],
+        embeddings: Embeddings,
+    ) -> None:
         self.documents = documents
         self.vectors: NDArray[np.float64] = np.asarray(vectors, dtype=np.float64)
-        if (
-            not documents
-            or self.vectors.ndim != 2
-            or len(documents) != len(self.vectors)
-            or not np.isfinite(self.vectors).all()
-        ):
-            raise ValueError("Invalid documentation vectors")
+        self._validate_vectors(documents, self.vectors)
         self.embeddings = embeddings
         self.neighbors = NearestNeighbors(metric="cosine", algorithm="brute").fit(self.vectors)
+
+    @staticmethod
+    def _validate_vectors(documents: list[Document], vectors: NDArray[np.float64]) -> None:
+        if (
+            not documents
+            or vectors.ndim != 2
+            or not vectors.shape[1]
+            or len(documents) != len(vectors)
+            or not np.isfinite(vectors).all()
+        ):
+            raise ValueError("Invalid documentation vectors")
 
     @classmethod
     def build(cls, documents: list[Document], embeddings: Embeddings) -> "VectorStore":
@@ -44,7 +54,9 @@ class VectorStore:
         pq.write_table(table, path)
 
     @classmethod
-    def load(cls, path: Path, embeddings: Embeddings) -> "VectorStore":
+    def read(cls, path: Path) -> tuple[list[Document], NDArray[np.float64]]:
+        if not path.is_file():
+            raise ValueError("Documentation vectors must be a Parquet file")
         data = pq.read_table(path).to_pydict()
         if set(data) != {"id", "content", "metadata", "embedding"}:
             raise ValueError("Invalid vector index columns")
@@ -55,9 +67,18 @@ class VectorStore:
             )
         ]
         for document in documents:
-            if not document.id or not {"source", "title", "section"} <= document.metadata.keys():
+            if not document.id or any(
+                not isinstance(document.metadata.get(key), str) for key in ("source", "title", "section")
+            ):
                 raise ValueError("Invalid vector index metadata")
-        return cls(documents, data["embedding"], embeddings)
+        vectors: NDArray[np.float64] = np.asarray(data["embedding"], dtype=np.float64)
+        cls._validate_vectors(documents, vectors)
+        return documents, vectors
+
+    @classmethod
+    def load(cls, path: Path, embeddings: Embeddings) -> "VectorStore":
+        documents, vectors = cls.read(path)
+        return cls(documents, vectors, embeddings)
 
     def search(self, query: str, k: int) -> list[tuple[Document, float]]:
         distances, indices = self.neighbors.kneighbors(

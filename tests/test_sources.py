@@ -84,6 +84,47 @@ def test_does_not_index_error_or_html_pages(response: httpx.Response) -> None:
         source.load()
 
 
+@pytest.mark.parametrize(
+    "index_url,target",
+    [
+        (INDEX, "https://DOCS.EXAMPLE.TEST/langgraph/page.md"),
+        (INDEX, "https://docs.example.test:443/langgraph/page.md"),
+        ("https://DOCS.EXAMPLE.TEST:443/langgraph/llms.txt", "https://docs.example.test/langgraph/page.md"),
+        (
+            "https://docs.example.test:8443/langgraph/llms.txt",
+            "https://DOCS.EXAMPLE.TEST:8443/langgraph/page.md",
+        ),
+    ],
+)
+def test_equivalent_url_origins_are_accepted(index_url: str, target: str) -> None:
+    assert DocumentationLoader(index_url)._in_scope(target)
+
+
+@pytest.mark.parametrize("authority", ["DOCS.EXAMPLE.TEST", "docs.example.test:443", "DOCS.EXAMPLE.TEST:443"])
+def test_discovers_and_follows_equivalent_url_origins(authority: str) -> None:
+    source = loader(
+        {
+            INDEX: httpx.Response(200, text=f"- [Page](https://{authority}/langgraph/page.md)"),
+            "https://docs.example.test/langgraph/page.md": httpx.Response(
+                302, headers={"location": f"https://{authority}/langgraph/relocated"}
+            ),
+            "https://docs.example.test/langgraph/relocated.md": httpx.Response(
+                200, text="# Page\n\nDocumentation."
+            ),
+        }
+    )
+    pages = source.load()
+    assert len(pages) == 1
+    assert pages[0].title == "Page"
+    assert pages[0].source.endswith("/langgraph/relocated")
+
+
+@pytest.mark.parametrize("port", ["443", "0", "invalid", "65536"])
+def test_custom_origin_port_does_not_match_other_ports(port: str) -> None:
+    source = DocumentationLoader("https://docs.example.test:8443/langgraph/llms.txt")
+    assert not source._same_origin(f"https://docs.example.test:{port}/langgraph/page.md")
+
+
 def test_empty_index_fails_instead_of_publishing_an_empty_corpus() -> None:
     with pytest.raises(ValueError, match="No Markdown"):
         loader({INDEX: httpx.Response(200, text="# Empty")}).load()
@@ -115,7 +156,19 @@ def test_page_limit_aborts_before_fetching_partial_corpus() -> None:
 
 @pytest.mark.parametrize(
     "target",
-    ["https://elsewhere.test/page", "http://docs.example.test/page", "https://user@docs.example.test/page"],
+    [
+        "https://elsewhere.test/page",
+        "http://docs.example.test/page",
+        "https://user@docs.example.test/page",
+        "https://@docs.example.test/page",
+        "https://docs.example.test:8443/page",
+        "https://docs.example.test:0/page",
+        "https://docs.example.test:invalid/page",
+        "https://docs.example.test:65536/page",
+        "https://docs.example.test/page?query=1",
+        "https://docs.example.test/%2e%2e/page",
+        "https://docs.example.test/path%5cpage",
+    ],
 )
 def test_page_redirects_cannot_escape_origin(target: str) -> None:
     source = loader(
@@ -124,5 +177,5 @@ def test_page_redirects_cannot_escape_origin(target: str) -> None:
             "https://docs.example.test/langgraph/page.md": httpx.Response(302, headers={"location": target}),
         }
     )
-    with pytest.raises(ValueError, match="outside"):
+    with pytest.raises((ValueError, httpx.RemoteProtocolError), match="outside|Invalid URL"):
         source.load()

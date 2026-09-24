@@ -105,11 +105,16 @@ class DocumentationIndex:
             return self._refresh()
 
     def full_docs(self) -> str:
+        separator = "\n\n---\n\n"
+        parts: list[str] = []
+        characters = 0
         with self._lock:
             self._refresh()
-            content = "\n\n---\n\n".join(
-                f"SOURCE: {page.source}\n\n{page.content}" for page in self._pages.values()
-            )
-        if len(content) > 200000:
-            raise ValueError("Corpus exceeds the resource limit; use search and read_page instead")
-        return content
+            for page in self._pages.values():
+                characters += len("SOURCE: \n\n") + len(page.source) + len(page.content)
+                if parts:
+                    characters += len(separator)
+                if characters > 200000:
+                    raise ValueError("Corpus exceeds the resource limit; use search and read_page instead")
+                parts.append(f"SOURCE: {page.source}\n\n{page.content}")
+        return separator.join(parts)

@@ -36,13 +36,19 @@ class DocumentationLoader:
         self.timeout = timeout
 
     def _same_origin(self, url: str) -> bool:
-        parsed = urlsplit(url)
+        try:
+            parsed = urlsplit(url)
+            port = parsed.port if parsed.port is not None else 443
+            origin_port = self.origin.port if self.origin.port is not None else 443
+        except ValueError:
+            return False
         path = unquote(parsed.path)
         return (
-            parsed.scheme == "https"
-            and parsed.netloc == self.origin.netloc
-            and not parsed.username
-            and not parsed.password
+            parsed.scheme == self.origin.scheme == "https"
+            and parsed.hostname == self.origin.hostname
+            and port == origin_port
+            and parsed.username is None
+            and parsed.password is None
             and not parsed.query
             and ".." not in path.split("/")
             and "\\" not in path
