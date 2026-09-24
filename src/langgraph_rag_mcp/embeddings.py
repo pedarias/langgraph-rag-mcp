@@ -6,6 +6,7 @@ from pathlib import Path
 
 import numpy as np
 from langchain_core.embeddings import Embeddings
+from numpy.typing import NDArray
 
 from langgraph_rag_mcp.settings import Settings
 
@@ -54,7 +55,7 @@ class CachedEmbeddings(Embeddings):
                 self.embedded_chunks += len(missing)
             result = [cached[key] for key in keys]
             if result:
-                values = np.asarray(result, dtype=np.float64)
+                values: NDArray[np.float64] = np.asarray(result, dtype=np.float64)
                 if values.ndim != 2 or not values.shape[1] or not np.isfinite(values).all():
                     raise ValueError("Invalid embedding vectors; cache update rolled back")
             return result

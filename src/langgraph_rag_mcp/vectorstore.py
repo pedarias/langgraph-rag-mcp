@@ -6,13 +6,14 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
+from numpy.typing import NDArray
 from sklearn.neighbors import NearestNeighbors
 
 
 class VectorStore:
     def __init__(self, documents: list[Document], vectors: list[list[float]], embeddings: Embeddings) -> None:
         self.documents = documents
-        self.vectors = np.asarray(vectors, dtype=np.float64)
+        self.vectors: NDArray[np.float64] = np.asarray(vectors, dtype=np.float64)
         if (
             not documents
             or self.vectors.ndim != 2

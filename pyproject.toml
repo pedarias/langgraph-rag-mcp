@@ -59,7 +59,7 @@ include = ["src/**/*.py", "tests/**/*.py", "langgraph-mcp.py"]
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 files = ["src/langgraph_rag_mcp"]
 check_untyped_defs = true
 disallow_untyped_defs = true
