@@ -1,0 +1,139 @@
+{
+  "name": "langgraph-docs-en-pt",
+  "version": 1,
+  "description": "Twenty manually authored queries: ten paired English/Portuguese topics. Expected sources are canonical documentation pages, not exhaustive relevance judgments. Measures page retrieval, not passage correctness or generated answers. Labels were chosen before running the baseline.",
+  "cases": [
+    {
+      "id": "interrupts-en",
+      "language": "en",
+      "query": "How can I pause a graph for human approval and resume it with a supplied value?",
+      "expected_sources": ["https://docs.langchain.com/oss/python/langgraph/interrupts"]
+    },
+    {
+      "id": "interrupts-pt",
+      "language": "pt",
+      "query": "Como pausar um grafo para aprovação humana e retomá-lo com um valor fornecido?",
+      "expected_sources": ["https://docs.langchain.com/oss/python/langgraph/interrupts"]
+    },
+    {
+      "id": "checkpoints-en",
+      "language": "en",
+      "query": "Why do I need a thread_id when checkpointing, and how do I retrieve a conversation's saved state?",
+      "expected_sources": ["https://docs.langchain.com/oss/python/langgraph/checkpointers"]
+    },
+    {
+      "id": "checkpoints-pt",
+      "language": "pt",
+      "query": "Por que preciso de um thread_id ao salvar checkpoints e como recupero o estado salvo de uma conversa?",
+      "expected_sources": ["https://docs.langchain.com/oss/python/langgraph/checkpointers"]
+    },
+    {
+      "id": "stream-modes-en",
+      "language": "en",
+      "query": "When using graph.stream, how do the updates, values and messages stream modes differ?",
+      "expected_sources": ["https://docs.langchain.com/oss/python/langgraph/streaming"]
+    },
+    {
+      "id": "stream-modes-pt",
+      "language": "pt",
+      "query": "Ao usar graph.stream, qual é a diferença entre os modos de streaming updates, values e messages?",
+      "expected_sources": ["https://docs.langchain.com/oss/python/langgraph/streaming"]
+    },
+    {
+      "id": "long-term-memory-en",
+      "language": "en",
+      "query": "How can an agent remember a user's preferences across different conversations instead of only one thread?",
+      "expected_sources": [
+        "https://docs.langchain.com/oss/python/langgraph/stores",
+        "https://docs.langchain.com/oss/python/langgraph/add-memory"
+      ]
+    },
+    {
+      "id": "long-term-memory-pt",
+      "language": "pt",
+      "query": "Como um agente pode lembrar as preferências de um usuário entre conversas diferentes, e não apenas em uma thread?",
+      "expected_sources": [
+        "https://docs.langchain.com/oss/python/langgraph/stores",
+        "https://docs.langchain.com/oss/python/langgraph/add-memory"
+      ]
+    },
+    {
+      "id": "time-travel-en",
+      "language": "en",
+      "query": "How can I fork execution from an earlier checkpoint with modified state without overwriting the original history?",
+      "expected_sources": ["https://docs.langchain.com/oss/python/langgraph/use-time-travel"]
+    },
+    {
+      "id": "time-travel-pt",
+      "language": "pt",
+      "query": "Como criar uma nova ramificação da execução a partir de um checkpoint anterior, alterando o estado sem sobrescrever o histórico original?",
+      "expected_sources": ["https://docs.langchain.com/oss/python/langgraph/use-time-travel"]
+    },
+    {
+      "id": "subgraphs-en",
+      "language": "en",
+      "query": "How do I call a subgraph from a parent graph when their state schemas have no shared keys?",
+      "expected_sources": ["https://docs.langchain.com/oss/python/langgraph/use-subgraphs"]
+    },
+    {
+      "id": "subgraphs-pt",
+      "language": "pt",
+      "query": "Como chamar um subgrafo a partir do grafo pai quando seus esquemas de estado não têm chaves em comum?",
+      "expected_sources": ["https://docs.langchain.com/oss/python/langgraph/use-subgraphs"]
+    },
+    {
+      "id": "concurrent-updates-en",
+      "language": "en",
+      "query": "Why does INVALID_CONCURRENT_GRAPH_UPDATE happen when parallel nodes update the same key, and how can a reducer fix it?",
+      "expected_sources": ["https://docs.langchain.com/oss/python/langgraph/errors/INVALID_CONCURRENT_GRAPH_UPDATE"]
+    },
+    {
+      "id": "concurrent-updates-pt",
+      "language": "pt",
+      "query": "Por que ocorre INVALID_CONCURRENT_GRAPH_UPDATE quando nós paralelos atualizam a mesma chave e como um redutor pode resolver isso?",
+      "expected_sources": ["https://docs.langchain.com/oss/python/langgraph/errors/INVALID_CONCURRENT_GRAPH_UPDATE"]
+    },
+    {
+      "id": "recursion-limit-en",
+      "language": "en",
+      "query": "What causes GRAPH_RECURSION_LIMIT and where do I configure a higher recursion_limit for a complex graph?",
+      "expected_sources": ["https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT"]
+    },
+    {
+      "id": "recursion-limit-pt",
+      "language": "pt",
+      "query": "O que causa GRAPH_RECURSION_LIMIT e onde configuro um recursion_limit maior para um grafo complexo?",
+      "expected_sources": ["https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT"]
+    },
+    {
+      "id": "functional-api-en",
+      "language": "en",
+      "query": "How do @entrypoint and @task add persistence to ordinary Python functions without declaring an explicit graph?",
+      "expected_sources": [
+        "https://docs.langchain.com/oss/python/langgraph/functional-api",
+        "https://docs.langchain.com/oss/python/langgraph/use-functional-api"
+      ]
+    },
+    {
+      "id": "functional-api-pt",
+      "language": "pt",
+      "query": "Como @entrypoint e @task adicionam persistência a funções Python comuns sem declarar um grafo explícito?",
+      "expected_sources": [
+        "https://docs.langchain.com/oss/python/langgraph/functional-api",
+        "https://docs.langchain.com/oss/python/langgraph/use-functional-api"
+      ]
+    },
+    {
+      "id": "application-structure-en",
+      "language": "en",
+      "query": "What belongs in langgraph.json, and how do I declare the graphs and dependencies of an application?",
+      "expected_sources": ["https://docs.langchain.com/oss/python/langgraph/application-structure"]
+    },
+    {
+      "id": "application-structure-pt",
+      "language": "pt",
+      "query": "O que deve estar em langgraph.json e como declaro os grafos e as dependências de uma aplicação?",
+      "expected_sources": ["https://docs.langchain.com/oss/python/langgraph/application-structure"]
+    }
+  ]
+}

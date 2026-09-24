@@ -1,0 +1,11 @@
+**
+!Dockerfile
+!pyproject.toml
+!uv.lock
+!requirements.txt
+!README.md
+!langgraph-mcp.py
+!src/
+!src/**
+src/**/__pycache__/
+src/**/*.pyc
